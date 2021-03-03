@@ -237,11 +237,11 @@ void Initialize( int& argc, char**& argv )
 
         const Int provided =
             mpi::InitializeThread
-            ( argc, argv, mpi::THREAD_MULTIPLE );
+            ( argc, argv, mpi::THREAD_SERIALIZED );
         const int commRank = mpi::Rank( mpi::COMM_WORLD );
-        if( provided != mpi::THREAD_MULTIPLE && commRank == 0 )
+        if( provided != mpi::THREAD_SERIALIZED && commRank == 0 )
         {
-            cerr << "WARNING: Could not achieve THREAD_MULTIPLE support."
+            cerr << "WARNING: Could not achieve THREAD_SERIALIZED support."
                  << endl;
         }
         ::elemInitializedMpi = true;
@@ -249,7 +249,7 @@ void Initialize( int& argc, char**& argv )
     else
     {
         const Int provided = mpi::QueryThread();
-        if( provided != mpi::THREAD_MULTIPLE )
+        if( provided != mpi::THREAD_SERIALIZED )
         {
             throw std::runtime_error
             ("MPI initialized with inadequate thread support for Elemental");
