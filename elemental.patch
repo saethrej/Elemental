@@ -1,0 +1,549 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3028e9c64..5ff789a50 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -90,8 +90,8 @@ macro (add_cxx_flag_as_library FLAG_LIST_VAR FLAG)
+   LIST(APPEND ${FLAG_LIST_VAR} $<$<COMPILE_LANGUAGE:CXX>:${FLAG}>)
+ endmacro()
+ 
+-LIST(APPEND INITIAL_CXX_FLAGS
+-  "-Wall" "-Wextra" "-Wno-unused-parameter")
++#LIST(APPEND INITIAL_CXX_FLAGS
++#  "-Wall" "-Wextra" "-Wno-unused-parameter")
+ 
+ # Check all the CXX flags
+ foreach (flag IN LISTS INITIAL_CXX_FLAGS)
+@@ -102,15 +102,15 @@ foreach (flag IN LISTS INITIAL_CXX_FLAGS)
+ endforeach ()
+ 
+ # No sense having both, but some compilers support both. Probably overkill.
+-check_cxx_compiler_flag("-pedantic" CXX_COMPILER_HAS_PEDANTIC_FLAG)
+-if (CXX_COMPILER_HAS_PEDANTIC_FLAG)
+-  add_cxx_flag_as_library(EXTRA_CXX_FLAGS "-pedantic")
+-else ()
+-  check_cxx_compiler_flag("-Wpedantic" CXX_COMPILER_HAS_WPEDANTIC_FLAG)
+-  if (CXX_COMPILER_HAS_WPEDANTIC_FLAG)
+-    add_cxx_flag_as_library(EXTRA_CXX_FLAGS "-Wpedantic")
+-  endif ()
+-endif ()
++#check_cxx_compiler_flag("-pedantic" CXX_COMPILER_HAS_PEDANTIC_FLAG)
++#if (CXX_COMPILER_HAS_PEDANTIC_FLAG)
++#  add_cxx_flag_as_library(EXTRA_CXX_FLAGS "-pedantic")
++#else ()
++#  check_cxx_compiler_flag("-Wpedantic" CXX_COMPILER_HAS_WPEDANTIC_FLAG)
++#  if (CXX_COMPILER_HAS_WPEDANTIC_FLAG)
++#    add_cxx_flag_as_library(EXTRA_CXX_FLAGS "-Wpedantic")
++#  endif ()
++#endif ()
+ 
+ # Configuration options
+ option(Hydrogen_EXPORT_PACKAGE_REGISTRY
+diff --git a/src/matrices/random/misc/CMakeLists.txt b/src/matrices/random/misc/CMakeLists.txt
+index 1077dcfc5..c057f5758 100644
+--- a/src/matrices/random/misc/CMakeLists.txt
++++ b/src/matrices/random/misc/CMakeLists.txt
+@@ -1,11 +1,7 @@
+ # Add the source files for this directory
+ set_full_path(THIS_DIR_SOURCES
+   Haar.cpp
+-  HatanoNelson.cpp
+   HermitianUniformSpectrum.cpp
+-  NormalUniformSpectrum.cpp
+-  UniformHelmholtzGreens.cpp
+-  Wigner.cpp
+   )
+ 
+ # Propagate the files up the tree
+diff --git a/src/matrices/random/misc/HermitianUniformSpectrum.cpp b/src/matrices/random/misc/HermitianUniformSpectrum.cpp
+index 08c834bd5..e932767df 100644
+--- a/src/matrices/random/misc/HermitianUniformSpectrum.cpp
++++ b/src/matrices/random/misc/HermitianUniformSpectrum.cpp
+@@ -7,12 +7,10 @@
+    http://opensource.org/licenses/BSD-2-Clause
+ */
+ #include <El-lite.hpp>
+-#include <El/blas_like/level1.hpp>
++#include <El/blas_like/level1/Broadcast.hpp>
+ #include <El/lapack_like/factor.hpp>
+ #include <El/matrices.hpp>
+ 
+-#include <El/io.hpp>
+-
+ namespace El {
+ 
+ // Draw the spectrum from the specified half-open interval on the real line,
+@@ -44,7 +42,7 @@ void HermitianUniformSpectrum
+ 
+ template<typename F>
+ void HermitianUniformSpectrum
+-( ElementalMatrix<F>& APre, Int n, Base<F> lower, Base<F> upper )
++( AbstractMatrix<F>& APre, Int n, Base<F> lower, Base<F> upper )
+ {
+     EL_DEBUG_CSE
+     APre.Resize( n, n );
+@@ -60,7 +58,7 @@ void HermitianUniformSpectrum
+     if( grid.Rank() == 0 )
+         for( Int j=0; j<n; ++j )
+             d[j] = SampleUniform<Real>( lower, upper );
+-    mpi::Broadcast( d.data(), n, 0, grid.Comm() );
++    Broadcast(d.data(), grid.Comm(), 0);
+     Diagonal( A, d );
+ 
+     // Apply a Haar matrix from both sides
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt
+index 1661a4f6e..3ed2bac29 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -1,7 +1,7 @@
+ # Add the subdirectories
+-add_subdirectory(blas_like)
+-add_subdirectory(core)
+-#add_subdirectory(lapack_like)
++#add_subdirectory(blas_like)
++#add_subdirectory(core)
++add_subdirectory(lapack_like)
+ 
+ foreach (src_file ${SOURCES})
+ 
+diff --git a/tests/lapack_like/CMakeLists.txt b/tests/lapack_like/CMakeLists.txt
+index e848121de..f06c65944 100644
+--- a/tests/lapack_like/CMakeLists.txt
++++ b/tests/lapack_like/CMakeLists.txt
+@@ -1,35 +1,35 @@
+ # Add the source files for this directory
+ set_full_path(THIS_DIR_SOURCES
+-  ApplyPackedReflectors.cpp
+-  Bidiag.cpp
+-  BidiagDCSVD.cpp
++  #ApplyPackedReflectors.cpp
++  #Bidiag.cpp
++  #BidiagDCSVD.cpp
+   Cholesky.cpp
+-  CholeskyMod.cpp
+-  CholeskyQR.cpp
+-  Eig.cpp
+-  HermitianEig.cpp
+-  HermitianGenDefEig.cpp
+-  HermitianTridiag.cpp
+-  HermitianTridiagEig.cpp
+-  Hessenberg.cpp
+-  HessenbergSchur.cpp
+-  LDL.cpp
+-  LQ.cpp
+-  LU.cpp
+-  LUMod.cpp
+-  MultiShiftHessSolve.cpp
+-  QR.cpp
+-  RQ.cpp
+-  SVD.cpp
+-  SVDTwoByTwoUpper.cpp
+-  Schur.cpp
+-  SchurSwap.cpp
+-  SecularEVD.cpp
+-  SecularSVD.cpp
+-  TSQR.cpp
+-  TSSVD.cpp
+-  TriangEig.cpp
+-  TriangularInverse.cpp
++  #CholeskyMod.cpp
++  #CholeskyQR.cpp
++  #Eig.cpp
++  #HermitianEig.cpp
++  #HermitianGenDefEig.cpp
++  #HermitianTridiag.cpp
++  #HermitianTridiagEig.cpp
++  #Hessenberg.cpp
++  #HessenbergSchur.cpp
++  #LDL.cpp
++  #LQ.cpp
++  #LU.cpp
++  #LUMod.cpp
++  #MultiShiftHessSolve.cpp
++  #QR.cpp
++  #RQ.cpp
++  #SVD.cpp
++  #SVDTwoByTwoUpper.cpp
++  #Schur.cpp
++  #SchurSwap.cpp
++  #SecularEVD.cpp
++  #SecularSVD.cpp
++  #TSQR.cpp
++  #TSSVD.cpp
++  #TriangEig.cpp
++  #TriangularInverse.cpp
+   )
+ 
+ # Propagate the files up the tree
+diff --git a/tests/lapack_like/Cholesky.cpp b/tests/lapack_like/Cholesky.cpp
+index 741013cee..0cec5354b 100644
+--- a/tests/lapack_like/Cholesky.cpp
++++ b/tests/lapack_like/Cholesky.cpp
+@@ -1,5 +1,6 @@
+ /*
+    Copyright (c) 2009-2016, Jack Poulson
++                 2021, Jens Eirik Saethre
+    All rights reserved.
+ 
+    This file is part of Elemental and is under the BSD 2-Clause License,
+@@ -9,315 +10,79 @@
+ #include <El.hpp>
+ using namespace El;
+ 
+-template<typename F>
+-void TestCorrectness
+-( bool pivot,
+-  UpperOrLower uplo,
+-  const Matrix<F>& A,
+-  const Permutation& p,
+-  const Matrix<F>& AOrig,
+-        Int numRHS=100 )
+-{
+-    typedef Base<F> Real;
+-    const Int n = AOrig.Height();
+-    const Real eps = limits::Epsilon<Real>();
+-
+-    // Test correctness by multiplying a random set of vectors by A, then
+-    // using the Cholesky factorization to solve.
+-    Matrix<F> X, Y;
+-    Uniform( X, n, numRHS );
+-    Zeros( Y, n, numRHS );
+-    Hemm( LEFT, uplo, F(1), AOrig, X, F(0), Y );
+-    const Real oneNormY = OneNorm( Y );
+-
+-    if( pivot )
+-        cholesky::SolveAfter( uplo, NORMAL, A, p, Y );
+-    else
+-        cholesky::SolveAfter( uplo, NORMAL, A, Y );
+-    X -= Y;
+-    const Real infNormE = InfinityNorm( X );
+-    const Real relErr = infNormE / (eps*n*oneNormY);
+-
+-    Output("||X - A \\ Y ||_oo / (eps n || Y ||_1) = ",relErr);
+-    // TODO(poulson): Use more refined failure criteria
+-    if( relErr > Real(100) )
+-        LogicError("Relative error was unacceptably large");
+-}
+-
+-template<typename F>
+-void TestCorrectness
+-( bool pivot,
+-  UpperOrLower uplo,
+-  const DistMatrix<F>& A,
+-  const DistPermutation& p,
+-  const DistMatrix<F>& AOrig,
+-        Int numRHS=100 )
+-{
+-    typedef Base<F> Real;
+-    const Grid& g = A.Grid();
+-    const Int n = AOrig.Height();
+-    const Real eps = limits::Epsilon<Real>();
+-
+-    // Test correctness by multiplying a random set of vectors by A, then
+-    // using the Cholesky factorization to solve.
+-    DistMatrix<F> X(g), Y(g);
+-    Uniform( X, n, numRHS );
+-    Zeros( Y, n, numRHS );
+-    Hemm( LEFT, uplo, F(1), AOrig, X, F(0), Y );
+-    const Real oneNormY = OneNorm( Y );
+-
+-    if( pivot )
+-        cholesky::SolveAfter( uplo, NORMAL, A, p, Y );
+-    else
+-        cholesky::SolveAfter( uplo, NORMAL, A, Y );
+-    X -= Y;
+-    const Real infNormE = InfinityNorm( X );
+-    const Real relErr = infNormE / (eps*n*oneNormY);
+-
+-    OutputFromRoot
+-    (g.Comm(), "||X - A \\ Y ||_oo / (eps n || Y ||_1) = ",relErr);
+-    // TODO(poulson): Use more refined failure criteria
+-    if( relErr > Real(100) )
+-        LogicError("Relative error was unacceptably large");
+-}
+ 
++/**
++ * @brief runs the cholesky factorization with the desired parameters
++ * 
++ * @tparam F the 
++ * @param g the grid to run the factorization on
++ * @param uplo denotes whether to compute L or L^T
++ * @param m the matrix dimension
++ * @param nbLocal the local block size
++ * @param scalapack flag indicating whether to test scalapack
++ */
+ template<typename F>
+-void TestSequentialCholesky
+-( UpperOrLower uplo,
+-  bool pivot,
+-  Int m,
+-  bool print,
+-  bool printDiag,
+-  bool correctness )
+-{
+-    Output("Testing sequential Cholesky with ",TypeName<F>());
+-    PushIndent();
+-    Matrix<F> A, AOrig;
+-    Permutation p;
+-
+-    HermitianUniformSpectrum( A, m, 1e-9, 10 );
+-    if( correctness )
+-        AOrig = A;
+-    if( print )
+-        Print( A, "A" );
+-
+-    Output("Cholesky...");
+-    Timer timer;
+-    timer.Start();
+-    if( pivot )
+-        Cholesky( uplo, A, p );
+-    else
+-        Cholesky( uplo, A );
+-    const double runTime = timer.Stop();
+-    const double realGFlops = (1./3.)*Pow(double(m),3.)/(1.e9*runTime);
+-    const double gFlops = ( IsComplex<F>::value ? 4*realGFlops : realGFlops );
+-    Output(runTime," seconds (",gFlops," GFlop/s)");
+-    if( print )
+-    {
+-        Print( A, "A after factorization" );
+-        if( pivot )
+-        {
+-            Matrix<Int> P;
+-            p.ExplicitMatrix( P );
+-            Print( P, "P" );
+-        }
+-    }
+-    if( printDiag )
+-        Print( GetRealPartOfDiagonal(A), "diag(A)" );
+-    if( correctness )
+-        TestCorrectness( pivot, uplo, A, p, AOrig );
+-    PopIndent();
+-}
+-
+-template<typename F>
+-void TestCholesky
+-( const Grid& g,
+-  UpperOrLower uplo,
+-  bool pivot,
+-  Int m,
+-  Int nbLocal,
+-  bool print,
+-  bool printDiag,
+-  bool correctness,
+-  bool scalapack )
+-{
++void TestCholesky(const Grid& g, UpperOrLower uplo, Int m, Int nbLocal, bool scalapack)
++{   
+     OutputFromRoot(g.Comm(),"Testing distributed Cholesky with ",TypeName<F>());
+-    PushIndent();
+-    DistMatrix<F> A(g), AOrig(g);
+-    DistPermutation p(g);
+-
+-    SetLocalTrrkBlocksize<F>( nbLocal );
+ 
+-    HermitianUniformSpectrum( A, m, 1e-9, 10 );
+-    if( correctness )
+-        AOrig = A;
+-    if( print )
+-        Print( A, "A" );
++    // initialize the matrix (currently to Identity)
++    DistMatrix<F> A(g);
++    SetLocalTrrkBlocksize<F>(nbLocal);
++    Identity(A, m, m);
+ 
+-    if( scalapack && !pivot )
+-        OutputFromRoot
+-        (g.Comm(),"ScaLAPACK Cholesky (including round-trip conversion)...");
+-    else
+-        OutputFromRoot(g.Comm(),"Elemental Cholesky...");
+-    mpi::Barrier( g.Comm() );
++    // start factorization with timing
++    mpi::Barrier(g.Comm());
+     Timer timer;
+     timer.Start();
+-    if( pivot )
+-        Cholesky( uplo, A, p );
+-    else
+-        Cholesky( uplo, A, scalapack );
++    Cholesky(uplo, A, scalapack);
+     mpi::Barrier( g.Comm() );
+-    const double runTime = timer.Stop();
+-    const double realGFlops = 1./3.*Pow(double(m),3.)/(1.e9*runTime);
+-    const double gFlops = ( IsComplex<F>::value ? 4*realGFlops : realGFlops );
+-    OutputFromRoot(g.Comm(),runTime," seconds (",gFlops," GFlop/s)");
+-    if( print )
+-    {
+-        Print( A, "A after factorization" );
+-        if( pivot )
+-        {
+-            DistMatrix<Int,VC,STAR> P(g);
+-            p.ExplicitMatrix( P );
+-            Print( P, "P" );
+-        }
+-    }
+-    if( printDiag )
+-        Print( GetRealPartOfDiagonal(A), "diag(A)" );
+-    if( correctness )
+-        TestCorrectness( pivot, uplo, A, p, AOrig );
+-    PopIndent();
++    const double runTime = timer.Stop() * 1000.0;
++
++    // print timing
++    OutputFromRoot(g.Comm(), runTime, " ms.");
+ }
+ 
+-int
+-main( int argc, char* argv[] )
++int main(int argc, char* argv[])
+ {
++    // set up the enviroment and the MPI communicator 
+     Environment env( argc, argv );
+-    mpi::Comm comm = mpi::COMM_WORLD;
++    mpi::Comm comm = mpi::NewWorldComm();
+ 
+-    try
+-    {
++    try {
++        // parse input arguments
+         Int gridHeight = Input("--gridHeight","process grid height",0);
+         const bool colMajor = Input("--colMajor","column-major ordering?",true);
+         const char uploChar = Input("--uplo","upper or lower storage: L/U",'L');
+-        const Int m = Input("--m","height of matrix",100);
++        const Int m = Input("--m","height of matrix",1024);
+         const Int nb = Input("--nb","algorithmic blocksize",96);
+         const Int nbLocal = Input("--nbLocal","local blocksize",32);
+-        const bool pivot = Input("--pivot","use pivoting?",false);
+-        const bool correctness = Input
+-            ("--correctness","test correctness?",true);
+-        const bool print = Input("--print","print matrices?",false);
+-        const bool printDiag = Input("--printDiag","print diag of fact?",false);
+-        const bool sequential = Input("--sequential","test sequential?",true);
+ #ifdef EL_HAVE_SCALAPACK
+         const bool scalapack = Input("--scalapack","test ScaLAPACK?",false);
+ #else
+         const bool scalapack = false;
+ #endif
+-#ifdef EL_HAVE_MPC
+-        const mpfr_prec_t prec = Input("--prec","MPFR precision",256);
+-#endif
++        // pass input arguments to the runtime enviroment and print details
+         ProcessInput();
+         PrintInputReport();
+ 
+-#ifdef EL_HAVE_MPC
+-        mpfr::SetPrecision( prec );
+-#endif
+-
+-        if( gridHeight == 0 )
+-            gridHeight = Grid::DefaultHeight( mpi::Size(comm) );
+-        const GridOrder order = colMajor ? COLUMN_MAJOR : ROW_MAJOR;
+-        const Grid g( comm, gridHeight, order );
+-        const UpperOrLower uplo = CharToUpperOrLower( uploChar );
+-        SetBlocksize( nb );
+-
+-        ComplainIfDebug();
+-
+-        if( sequential && mpi::Rank(comm) == 0 )
+-        {
+-            TestSequentialCholesky<float>
+-            ( uplo, pivot, m, print, printDiag, correctness );
+-            TestSequentialCholesky<Complex<float>>
+-            ( uplo, pivot, m, print, printDiag, correctness );
+-            TestSequentialCholesky<double>
+-            ( uplo, pivot, m, print, printDiag, correctness );
+-            TestSequentialCholesky<Complex<double>>
+-            ( uplo, pivot, m, print, printDiag, correctness );
+-
+-#ifdef EL_HAVE_QD
+-            TestSequentialCholesky<DoubleDouble>
+-            ( uplo, pivot, m, print, printDiag, correctness );
+-            TestSequentialCholesky<QuadDouble>
+-            ( uplo, pivot, m, print, printDiag, correctness );
+-
+-            TestSequentialCholesky<Complex<DoubleDouble>>
+-            ( uplo, pivot, m, print, printDiag, correctness );
+-            TestSequentialCholesky<Complex<QuadDouble>>
+-            ( uplo, pivot, m, print, printDiag, correctness );
+-#endif
+-
+-#ifdef EL_HAVE_QUAD
+-            TestSequentialCholesky<Quad>
+-            ( uplo, pivot, m, print, printDiag, correctness );
+-            TestSequentialCholesky<Complex<Quad>>
+-            ( uplo, pivot, m, print, printDiag, correctness );
+-#endif
+-
+-#ifdef EL_HAVE_MPC
+-            TestSequentialCholesky<BigFloat>
+-            ( uplo, pivot, m, print, printDiag, correctness );
+-            TestSequentialCholesky<Complex<BigFloat>>
+-            ( uplo, pivot, m, print, printDiag, correctness );
+-#endif
++        // set up grid
++        // default grid height if it was not specified (results in 2D)
++        if (gridHeight == 0) {
++            gridHeight = Grid::DefaultHeight(mpi::Size(comm));
+         }
+-
+-        TestCholesky<float>
+-        ( g, uplo, pivot, m, nbLocal,
+-          print, printDiag, correctness, scalapack );
+-        TestCholesky<Complex<float>>
+-        ( g, uplo, pivot, m, nbLocal,
+-          print, printDiag, correctness, scalapack );
+-        TestCholesky<double>
+-        ( g, uplo, pivot, m, nbLocal,
+-          print, printDiag, correctness, scalapack );
+-        TestCholesky<Complex<double>>
+-        ( g, uplo, pivot, m, nbLocal,
+-          print, printDiag, correctness, scalapack );
+-
+-#ifdef EL_HAVE_QD
+-        TestCholesky<DoubleDouble>
+-        ( g, uplo, pivot, m, nbLocal,
+-          print, printDiag, correctness, scalapack );
+-        TestCholesky<QuadDouble>
+-        ( g, uplo, pivot, m, nbLocal,
+-          print, printDiag, correctness, scalapack );
+-
+-        TestCholesky<Complex<DoubleDouble>>
+-        ( g, uplo, pivot, m, nbLocal,
+-          print, printDiag, correctness, scalapack );
+-        TestCholesky<Complex<QuadDouble>>
+-        ( g, uplo, pivot, m, nbLocal,
+-          print, printDiag, correctness, scalapack );
+-#endif
+-
+-#ifdef EL_HAVE_QUAD
+-        TestCholesky<Quad>
+-        ( g, uplo, pivot, m, nbLocal,
+-          print, printDiag, correctness, scalapack );
+-        TestCholesky<Complex<Quad>>
+-        ( g, uplo, pivot, m, nbLocal,
+-          print, printDiag, correctness, scalapack );
+-#endif
+-
+-#ifdef EL_HAVE_MPC
+-        TestCholesky<BigFloat>
+-        ( g, uplo, pivot, m, nbLocal,
+-          print, printDiag, correctness, scalapack );
+-        TestCholesky<Complex<BigFloat>>
+-        ( g, uplo, pivot, m, nbLocal,
+-          print, printDiag, correctness, scalapack );
+-#endif
++        const GridOrder order = colMajor ? COLUMN_MAJOR : ROW_MAJOR;
++        const Grid g(std::move(comm), gridHeight, order);
++        const UpperOrLower uplo = CharToUpperOrLower(uploChar);
++        SetBlocksize(nb);
++
++        // run cholesky factorization on all ranks
++        TestCholesky<double>(g, uplo, m, nbLocal, scalapack);
++    
++    } catch(exception &e) {
++        // report exception if one occured
++        ReportException(e);
+     }
+-    catch( exception& e ) { ReportException(e); }
+ 
+-    return 0;
++    return 0; // success
+ }

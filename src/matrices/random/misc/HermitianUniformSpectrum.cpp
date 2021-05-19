@@ -7,11 +7,9 @@
    http://opensource.org/licenses/BSD-2-Clause
 */
 #include <El-lite.hpp>
-#include <El/blas_like/level1.hpp>
+#include <El/blas_like/level1/Broadcast.hpp>
 #include <El/lapack_like/factor.hpp>
 #include <El/matrices.hpp>
-
-#include <El/io.hpp>
 
 namespace El {
 
@@ -44,7 +42,7 @@ void HermitianUniformSpectrum
 
 template<typename F>
 void HermitianUniformSpectrum
-( ElementalMatrix<F>& APre, Int n, Base<F> lower, Base<F> upper )
+( AbstractMatrix<F>& APre, Int n, Base<F> lower, Base<F> upper )
 {
     EL_DEBUG_CSE
     APre.Resize( n, n );
@@ -60,7 +58,7 @@ void HermitianUniformSpectrum
     if( grid.Rank() == 0 )
         for( Int j=0; j<n; ++j )
             d[j] = SampleUniform<Real>( lower, upper );
-    mpi::Broadcast( d.data(), n, 0, grid.Comm() );
+    Broadcast(d.data(), grid.Comm(), 0);
     Diagonal( A, d );
 
     // Apply a Haar matrix from both sides

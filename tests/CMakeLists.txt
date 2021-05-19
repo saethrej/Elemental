@@ -1,7 +1,7 @@
 # Add the subdirectories
-add_subdirectory(blas_like)
-add_subdirectory(core)
-#add_subdirectory(lapack_like)
+#add_subdirectory(blas_like)
+#add_subdirectory(core)
+add_subdirectory(lapack_like)
 
 foreach (src_file ${SOURCES})
 

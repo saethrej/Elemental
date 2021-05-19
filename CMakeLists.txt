@@ -90,8 +90,8 @@ macro (add_cxx_flag_as_library FLAG_LIST_VAR FLAG)
   LIST(APPEND ${FLAG_LIST_VAR} $<$<COMPILE_LANGUAGE:CXX>:${FLAG}>)
 endmacro()
 
-LIST(APPEND INITIAL_CXX_FLAGS
-  "-Wall" "-Wextra" "-Wno-unused-parameter")
+#LIST(APPEND INITIAL_CXX_FLAGS
+#  "-Wall" "-Wextra" "-Wno-unused-parameter")
 
 # Check all the CXX flags
 foreach (flag IN LISTS INITIAL_CXX_FLAGS)
@@ -102,15 +102,15 @@ foreach (flag IN LISTS INITIAL_CXX_FLAGS)
 endforeach ()
 
 # No sense having both, but some compilers support both. Probably overkill.
-check_cxx_compiler_flag("-pedantic" CXX_COMPILER_HAS_PEDANTIC_FLAG)
-if (CXX_COMPILER_HAS_PEDANTIC_FLAG)
-  add_cxx_flag_as_library(EXTRA_CXX_FLAGS "-pedantic")
-else ()
-  check_cxx_compiler_flag("-Wpedantic" CXX_COMPILER_HAS_WPEDANTIC_FLAG)
-  if (CXX_COMPILER_HAS_WPEDANTIC_FLAG)
-    add_cxx_flag_as_library(EXTRA_CXX_FLAGS "-Wpedantic")
-  endif ()
-endif ()
+#check_cxx_compiler_flag("-pedantic" CXX_COMPILER_HAS_PEDANTIC_FLAG)
+#if (CXX_COMPILER_HAS_PEDANTIC_FLAG)
+#  add_cxx_flag_as_library(EXTRA_CXX_FLAGS "-pedantic")
+#else ()
+#  check_cxx_compiler_flag("-Wpedantic" CXX_COMPILER_HAS_WPEDANTIC_FLAG)
+#  if (CXX_COMPILER_HAS_WPEDANTIC_FLAG)
+#    add_cxx_flag_as_library(EXTRA_CXX_FLAGS "-Wpedantic")
+#  endif ()
+#endif ()
 
 # Configuration options
 option(Hydrogen_EXPORT_PACKAGE_REGISTRY
