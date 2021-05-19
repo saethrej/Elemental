@@ -24,23 +24,27 @@ using namespace El;
 template<typename F>
 void TestCholesky(const Grid& g, UpperOrLower uplo, Int m, Int nbLocal, bool scalapack)
 {   
-    OutputFromRoot(g.Comm(),"Testing distributed Cholesky with ",TypeName<F>());
+    OutputFromRoot(g.Comm(),"Testing distributed Cholesky with ",TypeName<F>(), ",\nlocal block: ", nbLocal, ",\nmatrix size: ", m, 
+    ",\nProcessors: ", g.Size());
 
     // initialize the matrix (currently to Identity)
-    DistMatrix<F> A(g);
-    SetLocalTrrkBlocksize<F>(nbLocal);
-    Identity(A, m, m);
-
-    // start factorization with timing
-    mpi::Barrier(g.Comm());
-    Timer timer;
-    timer.Start();
-    Cholesky(uplo, A, scalapack);
-    mpi::Barrier( g.Comm() );
-    const double runTime = timer.Stop() * 1000.0;
+    for (int i = 0; i < 6; i++) {
+        DistMatrix<F> A(g);
+        SetLocalTrrkBlocksize<F>(nbLocal);
+        Identity(A, m,m);
+        // start factorization with timing
+        mpi::Barrier(g.Comm());
+        Timer timer;
+        timer.Start();
+        Cholesky(uplo, A, scalapack);
+        mpi::Barrier( g.Comm() );
+        const double runTime = timer.Stop() * 1000.0;
+        if (i > 0) {
+            OutputFromRoot(g.Comm(), "cholesky,", "elemental,", m, ",",m, ",", g.Size(), ",time,", "other,", round(runTime), ",",nbLocal);
+        }
+    }
 
     // print timing
-    OutputFromRoot(g.Comm(), runTime, " ms.");
 }
 
 int main(int argc, char* argv[])
